@@ -1,6 +1,10 @@
 import json
 
 
+def dict_to_list(d):
+    return [{**v, "key": k} for (k, v) in d.items()]
+
+
 class Metro:
     def run_checks(self, d):
         assert "stations" in d
@@ -11,7 +15,7 @@ class Metro:
             self.run_checks(full_map)
             self.full_map = full_map
         elif type(full_map) is str:
-            with open(full_map) as data_file:
+            with open(full_map, encoding="utf8") as data_file:
                 full_map = json.load(data_file)
                 self.run_checks(full_map)
                 self.full_map = full_map
