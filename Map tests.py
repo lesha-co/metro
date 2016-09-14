@@ -89,21 +89,21 @@ class MapAnalyticsTestCase(unittest.TestCase):
         st1 = dict_to_list(m.get_stations_by_name("Новоясеневская"))[0]
         st2 = dict_to_list(m.get_stations_by_name("Ясенево"))[0]
         st3 = dict_to_list(m.get_stations_by_name("Тёплый Стан"))[0]
-        st3_id = m.continue_line(st1["key"], st2["key"])
+        st3_id = m.get_next_station_in_line(st1["key"], st2["key"])
         self.assertEqual(st3_id, st3["key"])
 
     def test_continue_line_end(self):
         m = Metro('data.json')
         st1 = dict_to_list(m.get_stations_by_name("Новоясеневская"))[0]
         st2 = dict_to_list(m.get_stations_by_name("Ясенево"))[0]
-        st_none_id = m.continue_line(st2["key"], st1["key"])
+        st_none_id = m.get_next_station_in_line(st2["key"], st1["key"])
         self.assertIsNone(st_none_id)
 
     def test_continue_line_junction(self):
         m = Metro('data.json')
         st1 = dict_to_list(m.get_stations_by_name("Киевская", line=4))[0]
         st2 = dict_to_list(m.get_stations_by_name("Смоленская", line=4))[0]
-        st_none_id = m.continue_line(st2["key"], st1["key"])
+        st_none_id = m.get_next_station_in_line(st2["key"], st1["key"])
         self.assertIsNone(st_none_id)
 
     def test_each_link_has_formed_key(self):
@@ -123,9 +123,12 @@ class MapRoutingTestCase(unittest.TestCase):
         station_ids = [dict_to_list(m.get_stations_by_name(station_name, line=LINE_ID))[0]["key"]
                        for station_name in STATION_NAMES]
 
-        stack = m.continue_line_until_transfer_or_end(station_ids[0], station_ids[1])
+        link_0_1 = m.get_links(station_ids[0], station_ids[1])[0]
+        stack = m.continue_line_until_transfer_or_end(station_ids[0], link_0_1)
         self.assertListEqual(stack, station_ids)
-        stack = m.continue_line_until_transfer_or_end(station_ids[-1], station_ids[-2])
+
+        link_m1_m2 = m.get_links(station_ids[-1], station_ids[-2])[0]
+        stack = m.continue_line_until_transfer_or_end(station_ids[-1], link_m1_m2)
         self.assertListEqual(stack, station_ids[::-1])
 
     def test_get_line_segment_from_station(self):
@@ -135,7 +138,7 @@ class MapRoutingTestCase(unittest.TestCase):
         non_transfer_station_ids = [station_id for station_id in station_ids
                                     if not m.is_station_a_transfer_station(station_id)]
         for station_id in non_transfer_station_ids:
-            stack = m.get_line_segment_from_station(station_id)
+            stack = m.get_line_segment_from_station(station_id)["stations"]
             self.assertSetEqual(set(stack), set(station_ids))
 
     def test_get_links(self):
