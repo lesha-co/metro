@@ -12,16 +12,23 @@ class Metro:
 
     def __init__(self, full_map):
         if type(full_map) is dict:
-            self.run_checks(full_map)
-            self.full_map = full_map
+            pass
         elif type(full_map) is str:
             with open(full_map, encoding="utf8") as data_file:
                 full_map = json.load(data_file)
-                self.run_checks(full_map)
-                self.full_map = full_map
+        else:
+            raise TypeError("full_map should be either a str or dict, not {}".format(type(full_map)))
+
+        self.run_checks(full_map)
 
         self.links = full_map["links"]
         self.stations = full_map['stations']
+        # preparing
+        for (station_id, station) in self.stations.items():
+            station["linkIds"] = [str(link_id) for link_id in station["linkIds"]]
+        for (link_id, link) in self.links.items():
+            link["fromStationId"] = str(link["fromStationId"])
+            link["toStationId"] = str(link["toStationId"])
 
     def get_transfer_stations(self):
         return [station_id for (station_id, station) in self.stations.items()
@@ -57,15 +64,15 @@ class Metro:
         link_ids = station["linkIds"]
         links = []
         for link_id in link_ids:
-            link = self.full_map["links"][str(link_id)]
-            other_station_id = [link[k] for k in ["fromStationId", "toStationId"] if link[k] != int(station_id)][0]
+            link = self.links[link_id]
+            other_station_id = [link[k] for k in ["fromStationId", "toStationId"] if link[k] != station_id][0]
             new_link = {**link, "otherStationId": other_station_id}
             links.append(new_link)
         return links
 
     def get_line_neighbour_ids(self, station_id):
         neighbours = self.get_neighbours(station_id)
-        return [str(link["otherStationId"]) for link in neighbours if link["type"] == "link"]
+        return [link["otherStationId"] for link in neighbours if link["type"] == "link"]
 
     def is_station_a_transfer_station(self, station_id):
         neighbours = self.get_neighbours(station_id)

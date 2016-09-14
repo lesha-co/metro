@@ -42,8 +42,8 @@ class MapAnalyticsTestCase(unittest.TestCase):
         neighbours = m.get_neighbours(st1['key'])
         line_neighbours_ids = [link["otherStationId"] for link in neighbours if link["type"] == "link"]
         transfer_neighbours_ids = [link["otherStationId"] for link in neighbours if link["type"] == "transfer"]
-        self.assertIn(int(st2['key']), line_neighbours_ids)
-        self.assertIn(int(st3['key']), transfer_neighbours_ids)
+        self.assertIn(st2['key'], line_neighbours_ids)
+        self.assertIn(st3['key'], transfer_neighbours_ids)
 
     def test_get_line_neighbour_ids(self):
         m = Metro('data.json')
@@ -112,8 +112,8 @@ class MapAnalyticsTestCase(unittest.TestCase):
         for link in links:
             _from = link[:-3]
             _to = link[-3:]
-            self.assertEqual(int(_from), links[link]["fromStationId"])
-            self.assertEqual(int(_to), links[link]["toStationId"])
+            self.assertEqual(_from, links[link]["fromStationId"])
+            self.assertEqual(_to.lstrip("0"), links[link]["toStationId"])
 
 
 class MapRoutingTestCase(unittest.TestCase):
